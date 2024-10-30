@@ -50,14 +50,11 @@ def get_personalized_content(user_data):
         messages=[{"role": "user", "content": prompt}]
     )
     
-    # Bereinige die Antwort
-    content = str(response.content)
-    content = content.replace('[TextBlock(text=', '')
-    content = content.replace(', type=\'text\')]', '')
-    content = content.replace('\t', '')
-    content = content.replace('\n\n\n', '\n')
+    # Saubere Extraktion des Texts
+    content = message.content[0].text if isinstance(message.content[0].text, str) else str(message.content[0])
     
-    return content
+    # Streamlit erwartet standardmäßig Markdown
+    return content.strip()
 
 # Personalisierte Inhalte generieren und anzeigen
 if st.sidebar.button('Inhalte personalisieren'):
