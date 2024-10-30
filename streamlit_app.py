@@ -35,29 +35,25 @@ hobbies = st.sidebar.multiselect('Hobbies', [
 def get_personalized_content(user_data):
     client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
     
-    system_prompt = """Du bist Clara, der vertrauenswürdige Chatbot der Helvetia Versicherung. Halte dich an folgende Regeln:
-    - Kommuniziere natürlich und verständlich
-    - Nutze nur verifizierte Informationen
-    - Biete relevante Self-Services an
-    - Formatiere den Output als sauberes HTML mit korrekter Struktur"""
-    
-    user_prompt = f"""Erstelle eine personalisierte Versicherungsberatung für:
-    Alter: {user_data['alter']}
-    Geschlecht: {user_data['geschlecht']}
-    Ausbildung: {user_data['ausbildung']}
-    Hausbesitzer: {'Ja' if user_data['hausbesitzer'] else 'Nein'}
-    Familienstand: {user_data['familienstand']}
-    Haustiere: {'Ja' if user_data['haustiere'] else 'Nein'}
-    Hobbies: {', '.join(user_data['hobbies'])}"""
+    prompt = f"""Du bist Clara, der vertrauenswürdige Chatbot der Helvetia Versicherung, der auf GPT-4 basiert und Retrieval-Augmented Generation nutzt. 
+
+Erstelle eine personalisierte Versicherungsberatung für:
+Alter: {user_data['alter']}
+Geschlecht: {user_data['geschlecht']}
+Ausbildung: {user_data['ausbildung']}
+Hausbesitzer: {'Ja' if user_data['hausbesitzer'] else 'Nein'}
+Familienstand: {user_data['familienstand']}
+Haustiere: {'Ja' if user_data['haustiere'] else 'Nein'}
+Hobbies: {', '.join(user_data['hobbies'])}
+
+Formatiere den Output als sauberes HTML mit korrekter Struktur."""
 
     message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-3-sonnet-20240229",
         max_tokens=1000,
         temperature=0.5,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+        system="Du bist Clara, der Chatbot der Helvetia. Du kommunizierst natürlich und verständlich, nutzt nur verifizierte Informationen und bietest relevante Self-Services an.",
+        messages=[{"role": "user", "content": prompt}]
     )
     
     content = message.content[0].text
