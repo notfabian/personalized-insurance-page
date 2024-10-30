@@ -19,4 +19,48 @@ hobbies = st.sidebar.multiselect("Hobbies", ["Sport", "Reisen", "Musik", "Kunst"
 # Hauptbereich
 st.title("Ihre personalisierte Versicherungslösung")
 
-# Hier kommt später der Claude-API-Call
+# Claude Integration
+def get_personalized_content(user_data):
+    client = anthropic.Client(os.getenv('ANTHROPIC_API_KEY'))
+    
+    prompt = f"""Du bist ein Versicherungsberater der Helvetia. Erstelle eine personalisierte Produktseite für folgende Person:
+
+    Alter: {user_data['alter']}
+    Geschlecht: {user_data['geschlecht']}
+    Ausbildung: {user_data['ausbildung']}
+    Hausbesitzer: {'Ja' if user_data['hausbesitzer'] else 'Nein'}
+    Familienstand: {user_data['familienstand']}
+    Haustiere: {'Ja' if user_data['haustiere'] else 'Nein'}
+    Hobbies: {', '.join(user_data['hobbies'])}
+
+    Die Seite soll:
+    - Freundlich und kompetent im Helvetia Tone-of-Voice sein
+    - Relevante Versicherungslösungen präsentieren
+    - Self-Service Optionen hervorheben
+    - HTML-Formatierung für bessere Lesbarkeit nutzen
+    """
+
+    response = client.messages.create(
+        model="claude-3-opus-20240229",
+        max_tokens=1000,
+        temperature=0.7,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return response.content
+
+# Personalisierte Inhalte generieren und anzeigen
+if st.sidebar.button('Inhalte personalisieren'):
+    user_data = {
+        'alter': alter,
+        'geschlecht': geschlecht,
+        'ausbildung': ausbildung,
+        'hausbesitzer': hausbesitzer,
+        'familienstand': familienstand,
+        'haustiere': haustiere,
+        'hobbies': hobbies
+    }
+    
+    with st.spinner('Personalisiere Inhalte...'):
+        content = get_personalized_content(user_data)
+        st.markdown(content, unsafe_allow_html=True)
