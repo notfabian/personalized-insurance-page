@@ -43,13 +43,20 @@ def get_personalized_content(user_data):
     """
 
     response = client.messages.create(
-        model="claude-3-opus-20240229",
+        model="claude-3-5-sonnet-20241022",
         max_tokens=1000,
         temperature=0.5,  # Reduziert für höhere Faktentreue
         messages=[{"role": "user", "content": prompt}]
     )
     
-    return response.content
+    # Bereinige die Antwort
+    content = str(response.content)
+    content = content.replace('[TextBlock(text=', '')
+    content = content.replace(', type=\'text\')]', '')
+    content = content.replace('\t', '')
+    content = content.replace('\n\n\n', '\n')
+    
+    return content
 
 # Personalisierte Inhalte generieren und anzeigen
 if st.sidebar.button('Inhalte personalisieren'):
