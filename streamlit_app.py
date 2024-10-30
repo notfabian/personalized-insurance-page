@@ -21,7 +21,7 @@ st.title("Ihre personalisierte Versicherungslösung")
 
 # Claude Integration
 def get_personalized_content(user_data):
-    client = anthropic.Client(os.getenv('ANTHROPIC_API_KEY'))
+    client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
     
     prompt = f"""Du bist ein Versicherungsberater der Helvetia. Erstelle eine personalisierte Produktseite für folgende Person:
 
