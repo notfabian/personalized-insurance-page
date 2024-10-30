@@ -1,62 +1,69 @@
 import streamlit as st
 import anthropic
 import os
-from dotenv import load_dotenv
 
-# Seitenkonfiguration
-st.set_page_config(page_title="Personalisierte Versicherungsseite", layout="wide")
+st.title('Personalisierte Versicherungsseite')
 
 # Sidebar für Benutzereingaben
-st.sidebar.header("Persönliche Angaben")
-alter = st.sidebar.slider("Alter", 18, 80, 30)
-geschlecht = st.sidebar.selectbox("Geschlecht", ["männlich", "weiblich", "divers"])
-ausbildung = st.sidebar.selectbox("Ausbildung", ["Lehre", "Matura", "Hochschule"])
-hausbesitzer = st.sidebar.checkbox("Hausbesitzer")
-familienstand = st.sidebar.selectbox("Familienstand", ["ledig", "verheiratet", "geschieden", "verwitwet"])
-haustiere = st.sidebar.checkbox("Haustiere")
-hobbies = st.sidebar.multiselect("Hobbies", ["Sport", "Reisen", "Musik", "Kunst", "Gaming", "Outdoor"])
+st.sidebar.header('Persönliche Informationen')
 
-# Hauptbereich
-st.title("Ihre personalisierte Versicherungslösung")
+alter = st.sidebar.slider('Alter', 18, 100, 30)
+geschlecht = st.sidebar.selectbox('Geschlecht', ['Männlich', 'Weiblich', 'Divers'])
+ausbildung = st.sidebar.selectbox('Höchste Ausbildung', [
+    'Obligatorische Schule',
+    'Berufslehre',
+    'Matura',
+    'Hochschule/Universität'
+])
+hausbesitzer = st.sidebar.checkbox('Hausbesitzer')
+familienstand = st.sidebar.selectbox('Familienstand', [
+    'Ledig',
+    'Verheiratet',
+    'Geschieden',
+    'Verwitwet'
+])
+haustiere = st.sidebar.checkbox('Haustiere')
+hobbies = st.sidebar.multiselect('Hobbies', [
+    'Sport',
+    'Reisen',
+    'Musik',
+    'Kunst',
+    'Gaming',
+    'Lesen'
+])
 
-# Claude Integration
 def get_personalized_content(user_data):
     client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
     
-    prompt = f"""Du bist ein Versicherungsberater der Helvetia. Erstelle eine personalisierte Produktseite für folgende Person:
-
+    system_prompt = """Du bist Clara, der vertrauenswürdige Chatbot der Helvetia Versicherung. Halte dich an folgende Regeln:
+    - Kommuniziere natürlich und verständlich
+    - Nutze nur verifizierte Informationen
+    - Biete relevante Self-Services an
+    - Formatiere den Output als sauberes HTML mit korrekter Struktur"""
+    
+    user_prompt = f"""Erstelle eine personalisierte Versicherungsberatung für:
     Alter: {user_data['alter']}
     Geschlecht: {user_data['geschlecht']}
     Ausbildung: {user_data['ausbildung']}
     Hausbesitzer: {'Ja' if user_data['hausbesitzer'] else 'Nein'}
     Familienstand: {user_data['familienstand']}
     Haustiere: {'Ja' if user_data['haustiere'] else 'Nein'}
-    Hobbies: {', '.join(user_data['hobbies'])}
+    Hobbies: {', '.join(user_data['hobbies'])}"""
 
-    Wichtige Vorgaben:
-    - Formatiere deinen Output als sauberes HTML mit <div>, <h2>, <p> Tags.
-    - Nutze nur verifizierte, faktisch korrekte Versicherungsinformationen
-    - Kommuniziere im professionellen, vertrauenswürdigen Helvetia-Stil
-    - Biete konkrete Self-Service Optionen an
-    - Vermeide Halluzinationen oder ungeprüfte Aussagen
-    - Strukturiere die Ausgabe mit HTML für bessere Lesbarkeit
-    - Personalisiere die Empfehlungen basierend auf der Lebenssituation
-    """
-
-    response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+    message = client.messages.create(
+        model="claude-3-sonnet-20240229",
         max_tokens=1000,
-        temperature=0.5,  # Reduziert für höhere Faktentreue
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0.5,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
     )
     
-    # Saubere Extraktion des Texts
-    content = message.content[0].text if isinstance(message.content[0].text, str) else str(message.content[0])
-    
-    # Streamlit erwartet standardmäßig Markdown
-    return content.strip()
+    content = message.content[0].text
+    return st.markdown(content, unsafe_allow_html=True)
 
-# Personalisierte Inhalte generieren und anzeigen
+# Button für Personalisierung
 if st.sidebar.button('Inhalte personalisieren'):
     user_data = {
         'alter': alter,
@@ -69,5 +76,4 @@ if st.sidebar.button('Inhalte personalisieren'):
     }
     
     with st.spinner('Personalisiere Inhalte...'):
-        content = get_personalized_content(user_data)
-        st.markdown(content, unsafe_allow_html=True)
+        get_personalized_content(user_data)
