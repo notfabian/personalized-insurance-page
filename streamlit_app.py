@@ -34,6 +34,7 @@ def get_personalized_content(user_data):
     Hobbies: {', '.join(user_data['hobbies'])}
 
     Wichtige Vorgaben:
+    - Formatiere deinen Output als sauberes HTML mit <div>, <h2>, <p> Tags.
     - Nutze nur verifizierte, faktisch korrekte Versicherungsinformationen
     - Kommuniziere im professionellen, vertrauenswürdigen Helvetia-Stil
     - Biete konkrete Self-Service Optionen an
